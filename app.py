@@ -7,7 +7,7 @@ from engine import calculate_match_score
 # --- Page Config ---
 st.set_page_config(page_title="AI Resume Matcher", page_icon="📄")
 
-st.title("🤖 AI Resume–Job Description Matcher")
+st.title(" AI Resume–Job Description Matcher")
 st.sidebar.info("This AI uses TF-IDF and Cosine Similarity to rank resumes.")
 st.markdown("Upload multiple resumes to see who fits the job description best.")
 
@@ -51,22 +51,31 @@ if st.button("Rank Candidates"):
                 
                 os.remove("temp.pdf") 
 
-            
             # --- Process Results ---
-            if not results:
-                st.error("No valid text found in the uploaded resumes!")
-            else:
-                df = pd.DataFrame(results)
+            df = pd.DataFrame(results)
+            
+            # Check if we actually got any results before displaying
+            if not df.empty:
                 df = df.sort_values(by="Match Score (%)", ascending=False)
                 
                 # --- Display Leaderboard ---
                 st.divider()
-                st.header("🏆 Candidate Leaderboard")
+                st.header("Candidate Ranking Report") # Professional version
                 
-                # Check if df is NOT empty before picking a winner
-                if not df.empty:
-                    winner = df.iloc[0]["Candidate Name"]
-                    st.success(f"🥇 **Best Match Found:** {winner}")
-                    st.dataframe(df, use_container_width=True)
-                else:
-                    st.warning("Could not calculate scores. Check your PDF files.")
+                # Show the winner
+                winner = df.iloc[0]["Candidate Name"]
+                st.success(f"**Top Candidate Identified:** {winner}")
+                
+                # Display the table
+                st.dataframe(df, use_container_width=True)
+                
+                # --- Download Button ---
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Export Results (CSV)",
+                    data=csv,
+                    file_name='candidate_ranking.csv',
+                    mime='text/csv',
+                )
+            else:
+                st.error("No resumes were successfully processed. Please check your files.")
