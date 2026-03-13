@@ -50,29 +50,23 @@ if st.button("Rank Candidates"):
                 })
                 
                 os.remove("temp.pdf") 
+
             
             # --- Process Results ---
-            df = pd.DataFrame(results)
-            df = df.sort_values(by="Match Score (%)", ascending=False)
-            
-            # --- Display Leaderboard ---
-            st.divider()
-            st.header("🏆 Candidate Leaderboard")
-            
-            # Show the winner first
-            winner = df.iloc[0]["Candidate Name"]
-            st.success(f"🥇 **Best Match Found:** {winner}")
-            
-            # Display the interactive table
-            st.dataframe(df, use_container_width=True)
-            
-            # --- Download Button (Created AFTER df is ready) ---
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Download Leaderboard as CSV",
-                data=csv,
-                file_name='candidate_ranking.csv',
-                mime='text/csv',
-            )
-    else:
-        st.error("Please provide both a Job Description and at least one Resume!")
+            if not results:
+                st.error("No valid text found in the uploaded resumes!")
+            else:
+                df = pd.DataFrame(results)
+                df = df.sort_values(by="Match Score (%)", ascending=False)
+                
+                # --- Display Leaderboard ---
+                st.divider()
+                st.header("🏆 Candidate Leaderboard")
+                
+                # Check if df is NOT empty before picking a winner
+                if not df.empty:
+                    winner = df.iloc[0]["Candidate Name"]
+                    st.success(f"🥇 **Best Match Found:** {winner}")
+                    st.dataframe(df, use_container_width=True)
+                else:
+                    st.warning("Could not calculate scores. Check your PDF files.")
